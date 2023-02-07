@@ -1,6 +1,6 @@
 from anti_detect import AntiDetect
 from context import Context
-from http import HTTPClient
+from http_client import HTTPClient
 from proxy import Proxy
 
 
