@@ -27,8 +27,11 @@ class Proxy:
         self._protocol = value
 
     @property
-    def proxy_url(self) -> str:
-        if '@' in self._proxy:
+    def proxy_url(self) -> str | None:
+        if not self._proxy:
+            return None
+
+        if self._proxy and '@' in self._proxy:
             self._proxy, auth = self._proxy.split('@')
             self._username, self._password = auth.split(':')
 
@@ -58,7 +61,6 @@ class Proxy:
 
         if self._username and self._password:
             return '{}://{}:{}@{}:{}'.format(self._protocol, self._ip, self._port, self._username, self._password)
-
         return '{}://{}:{}'.format(self._protocol, self._ip, self._port)
 
     @proxy_url.setter
