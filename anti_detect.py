@@ -1,0 +1,3 @@
+class AntiDetect:
+    """ AntiDetect """
+    pass
