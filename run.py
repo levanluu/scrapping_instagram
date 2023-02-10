@@ -4,6 +4,8 @@ import json
 from urllib.request import urlopen
 from context import Context
 from playwright.async_api import async_playwright
+from fingerprint import stealth_async
+from constants import ARGS
 
 
 def get_timezone(
@@ -26,53 +28,50 @@ def get_timezone(
     return timezone, lat, lon
 
 
+async def navigator(page):
+    await page.add_init_script(
+        'Object.defineProperty('
+        'Object.getPrototypeOf(navigator),'
+        '"deviceMemory",'
+        '{get() {return 16}})'
+    )
+    await page.add_init_script(
+        'Object.defineProperty('
+        'Object.getPrototypeOf(navigator),'
+        '"hardwareConcurrency",'
+        '{get() {return 16}})'
+    )
+
+
 async def fingerprint(
         playwright,
         proxy: str = None,
 ):
-    args = [
-        "--start-maximized",
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-web-security",
-        "--disable-gpu",
-        "--disable-gesture-requirement-for-media-playback",
-        "--use-fake-codec-for-peer-connection",
-        "--use-fake-device-for-media-stream",
-        "--use-fake-mjpeg-decode-accelerator",
-        "--use-fake-ui-for-fedcm",
-        "--use-fake-ui-for-media-stream"
-    ]
-    if proxy:
-        browser = await playwright.chromium.launch(
-            headless=False,
-            args=args,
-            proxy=proxy,
-            devtools=False,
-            channel='chrome'
-        )
-    else:
-        browser = await playwright.chromium.launch(
-            headless=False,
-            args=args,
-            devtools=False,
-            channel='chrome'
-        )
+    browser_type = playwright.webkit
+    browser_device = playwright.devices["Desktop Chrome"]
+    browser = await browser_type.launch(
+        headless=False,
+        args=ARGS,
+        proxy={
+            "server": "176.53.167.193:30011",
+            "username": "quynh_nguyen+3_digitalf",
+            "password": "ce0dd13d43"
+
+        },
+        devtools=False
+    )
 
     timezone, lat, lon = get_timezone(proxy)
     geolocation = {'longitude': lon, 'latitude': lat} if lat and lon else None
-    context = Context(is_mobile=False).random_browser_context()
     browser_context = await browser.new_context(
-        locale='en-US',
-        user_agent=context['user-agent'],
+        locale='en-US, en',
         timezone_id=timezone,
         geolocation=geolocation,
-        viewport=context['viewport'],
-        extra_http_headers={'user-agent': context['user-agent']}
+        **browser_device
     )
-    # Add script antidetect Browser
-    # await browser_context.add_init_script(path='js/webgl.vendor.js')
     page = await browser_context.new_page()
+    await stealth_async(page)
+    await navigator(page)
     return page
 
 
@@ -80,7 +79,7 @@ async def main():
     async with async_playwright() as pw:
         page = await fingerprint(pw)
         await page.goto(
-            url="https://bot.sannysoft.com/"
+            url="https://browserleaks.com/canvas"
         )
         await asyncio.sleep(100000)
 

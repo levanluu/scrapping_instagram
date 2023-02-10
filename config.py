@@ -1,3 +1,3 @@
 import json
 
-DEVICES = json.load(open('json/devices.json'))
+DEVICES = json.load(open('json/device/devices.json'))
