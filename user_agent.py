@@ -1,3 +1,5 @@
+import json
+
 from user_agents import parse
 
 
@@ -16,7 +18,7 @@ class UserAgent:
     def app_version(self):
         if 'firefox' in self.user_agent.lower():
             app_version = self.user_agent.split(";")[0]
-            app_version = app_version.split("/")
+            app_version = app_version.split("/")[1]
             return f"{app_version})"
         return self.user_agent.split("/")[1]
 
@@ -34,7 +36,7 @@ class UserAgent:
                 {"brand": "Not A(Brand", "version": "24"},
                 {"brand": self.ua.browser.family, "version": version},
             ],
-            "mobile": self.ua.is_mobile,
+            "mobile": self.is_mobile,
             "platform": "macOS" if "mac" in self.ua.os.family.lower() else self.ua.os.family
         }
 
@@ -56,5 +58,50 @@ class UserAgent:
         return self.ua.os.version_string
 
     @property
-    def os_cpu(self):
+    def oscpu(self):
         return f"{self.cpu} {self.os} {self.os_version}"
+
+    @property
+    def is_mobile(self):
+        return self.ua.is_mobile
+
+    @staticmethod
+    def to_json(obj):
+        return json.dumps(obj)
+
+    async def loads(self, page) -> None:
+        await self.load_user_agent_data(page=page)
+        await self.load_platform(page=page)
+        await self.load_app_code_name(page=page)
+        await self.load_app_version(page=page)
+        await self.load_oscpu(page=page)
+
+    async def load_user_agent_data(self, page) -> None:
+        await page.add_init_script(
+            'Object.defineProperty(Object.getPrototypeOf(navigator), '
+            '"userAgentData", {get() {return %s}})' % self.to_json(self.user_agent_data)
+        )
+
+    async def load_platform(self, page) -> None:
+        await page.add_init_script(
+            'Object.defineProperty(Object.getPrototypeOf(navigator), '
+            '"platform", {get() {return %s}})' % self.to_json(self.platform)
+        )
+
+    async def load_app_code_name(self, page) -> None:
+        await page.add_init_script(
+            'Object.defineProperty(Object.getPrototypeOf(navigator), '
+            '"appCodeName", {get() {return %s}})' % self.to_json(self.app_code_name)
+        )
+
+    async def load_app_version(self, page) -> None:
+        await page.add_init_script(
+            'Object.defineProperty(Object.getPrototypeOf(navigator), '
+            '"appVersion", {get() {return %s}})' % self.to_json(self.app_version)
+        )
+
+    async def load_oscpu(self, page) -> None:
+        await page.add_init_script(
+            'Object.defineProperty(Object.getPrototypeOf(navigator), '
+            '"oscpu", {get() {return %s}})' % self.to_json(self.oscpu)
+        )

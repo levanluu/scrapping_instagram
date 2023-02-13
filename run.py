@@ -7,10 +7,10 @@ from playwright.async_api import async_playwright
 from fingerprint import stealth_async
 from constants import ARGS
 from random import randint, uniform
+from navigator import Navigator
 
 
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) " \
-             "Chrome/109.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0"
 USERNAME = "bisdev001"
 PASSWORD = "Abcd12345@"
 
@@ -33,22 +33,6 @@ def get_timezone(
         lon = html.get('lon')
 
     return timezone, lat, lon
-
-
-async def navigator(page):
-    await page.add_init_script(
-        'Object.defineProperty(Object.getPrototypeOf(navigator),"deviceMemory", {get() {return 16}})'
-    )
-    await page.add_init_script(
-        'Object.defineProperty(Object.getPrototypeOf(navigator), "hardwareConcurrency", {get() {return 16}})'
-    )
-    await page.add_init_script(
-        'Object.defineProperty(Object.getPrototypeOf(navigator), '
-        '"userAgentData", {get() {return '
-        '{ "brands": [ { "brand": "Not_A Brand", "version": "99" }, '
-        '{ "brand": "Google Chrome", "version": "109" }, '
-        '{ "brand": "Chromium", "version": "109" } ], "mobile": false, "platform": "macOS" }}})'
-    )
 
 
 async def login(page) -> None:
@@ -80,8 +64,8 @@ async def fingerprint(
         **browser_device
     )
     page = await browser_context.new_page()
-    await stealth_async(page)
-    await navigator(page)
+    # await stealth_async(page)
+    await Navigator(page=page, user_agent=USER_AGENT).loads()
     return page, browser_context
 
 
@@ -89,22 +73,22 @@ async def main():
     async with async_playwright() as pw:
         page, browser_context = await fingerprint(pw)
 
-        await page.goto(url="https://twitter.com/?lang=en")
+        await page.goto(url="https://bot.sannysoft.com/")
 
-        cookies = json.load(open('cookies/bisdev001_instagram_11-02-2023.json'))
-        await page.context.add_cookies(cookies=cookies)
-        await asyncio.sleep(3)
-        await page.goto('https://www.instagram.com/')
-        await page.wait_for_load_state()
-        with open('cookies/bisdev001_instagram_11-02-2023.json', 'w') as f:
-            cookies = await page.context.cookies()
-            json.dump(cookies, f, indent=4)
-            print("Save cookies is ok!")
-
-        for i in range(3):
-            print(f"Auto-scroll => {i+1}")
-            await page.mouse.wheel(0, randint(300, 900))
-            await asyncio.sleep(uniform(1, 5))
+        # cookies = json.load(open('cookies/bisdev001_instagram_11-02-2023.json'))
+        # await page.context.add_cookies(cookies=cookies)
+        # await asyncio.sleep(3)
+        # await page.goto('https://www.instagram.com/')
+        # await page.wait_for_load_state()
+        # with open('cookies/bisdev001_instagram_11-02-2023.json', 'w') as f:
+        #     cookies = await page.context.cookies()
+        #     json.dump(cookies, f, indent=4)
+        #     print("Save cookies is ok!")
+        #
+        # for i in range(3):
+        #     print(f"Auto-scroll => {i+1}")
+        #     await page.mouse.wheel(0, randint(300, 900))
+        #     await asyncio.sleep(uniform(1, 5))
 
         await asyncio.sleep(100000)
 
