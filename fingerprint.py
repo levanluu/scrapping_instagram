@@ -13,27 +13,28 @@ def from_file(name):
 
 
 SCRIPTS: Dict[str, str] = {
-    'webdrive': from_file('navigator.webdriver.js'),
-    'navigator_vendor': from_file('navigator.vendor.js'),
-    'navigator_plugins': from_file('navigator.plugins.js'),
-    'navigator_permissions': from_file('navigator.permissions.js'),
-    'navigator_languages': from_file('navigator.languages.js'),
-    'navigator_platform': from_file('navigator.platform.js'),
-    'navigator_user_agent': from_file('navigator.userAgent.js'),
-    'navigator_hardware_concurrency': from_file('navigator.hardwareConcurrency.js'),
-    'media_codecs': from_file('media.codecs.js'),
-    'chrome_runtime': from_file('chrome.runtime.js'),
-    'chrome_loadtimes': from_file('chrome.loadtimes.js'),
-    'chrome_csi': from_file('chrome.csi.js'),
     'chrome_app': from_file('chrome.app.js'),
-    'iframe_content_window': from_file('iframe.contentWindow.js'),
-    'outerdimensions': from_file('window.outerdimensions.js'),
-    'webgl_vendor': from_file('webgl.vendor.js'),
-    'hairline': from_file('hairline.js'),
-    'utils': from_file('utils.js'),
-    'magic-arrays': from_file('magic-arrays.js'),
-    'webrtc': from_file('webrtc.js'),
+    'chrome_csi': from_file('chrome.csi.js'),
+    'chrome_load_times': from_file('chrome.load_times.js'),
+    'chrome_runtime': from_file('chrome.runtime.js'),
     'fingerprint': from_file('fingerprint.js'),
+    'hairline': from_file('hairline.js'),
+    'iframe_content_window': from_file('iframe.contentWindow.js'),
+    'magic-arrays': from_file('magic-arrays.js'),
+    'media_codecs': from_file('media.codecs.js'),
+    'navigator_hardware_concurrency': from_file('navigator.hardwareConcurrency.js'),
+    'navigator_languages': from_file('navigator.languages.js'),
+    'navigator_permissions': from_file('navigator.permissions.js'),
+    'navigator_platform': from_file('navigator.platform.js'),
+    'navigator_plugins': from_file('navigator.plugins.js'),
+    'navigator_user_agent': from_file('navigator.userAgent.js'),
+    'navigator_vendor': from_file('navigator.vendor.js'),
+    'outer_dimensions': from_file('window.outer_dimensions.js'),
+    'user_agent_data': from_file('navigator.user_agent_data.js'),
+    'utils': from_file('utils.js'),
+    'webdriver': from_file('navigator.webdriver.js'),
+    'webgl_vendor': from_file('webgl.vendor.js'),
+    'webrtc': from_file('webrtc.js'),
 }
 
 
@@ -59,25 +60,26 @@ class StealthConfig:
         ```
     """
     # scripts
-    webdrive: bool = True
-    webgl_vendor: bool = True
-    navigator_vendor: bool = True
-    navigator_plugins: bool = True
-    navigator_permissions: bool = True
-    navigator_languages: bool = True
-    navigator_platform: bool = True
-    navigator_user_agent: bool = True
-    navigator_hardware_concurrency: int = 8
-    media_codecs: bool = True
-    iframe_content_window: bool = True
-    chrome_runtime: bool = True
-    chrome_loadtimes: bool = True
-    chrome_csi: bool = True
     chrome_app: bool = True
-    outerdimensions: bool = True
-    hairline: bool = True
-    webrtc: bool = True
+    chrome_csi: bool = True
+    chrome_load_times: bool = True
+    chrome_runtime: bool = True
     fingerprint: bool = True
+    hairline: bool = True
+    iframe_content_window: bool = True
+    media_codecs: bool = True
+    navigator_hardware_concurrency: int = 8
+    navigator_languages: bool = True
+    navigator_permissions: bool = True
+    navigator_platform: bool = True
+    navigator_plugins: bool = True
+    navigator_user_agent: bool = True
+    navigator_vendor: bool = True
+    outer_dimensions: bool = True
+    user_agent_data = True
+    webdriver: bool = True
+    webgl_vendor: bool = True
+    webrtc: bool = True
 
     # options
     vendor: str = 'Intel Inc.'
@@ -86,7 +88,7 @@ class StealthConfig:
     nav_user_agent: Optional[str] = None
     nav_platform: Optional[str] = None
     languages: Tuple[str] = ('en-US', 'en')
-    runOnInsecureOrigins: Optional[bool] = None
+    run_on_insecure_origins: Optional[bool] = None
 
     @property
     def enabled_scripts(self):
@@ -97,8 +99,9 @@ class StealthConfig:
             'navigator_platform': self.nav_platform,
             'navigator_user_agent': self.nav_user_agent,
             'languages': list(self.languages),
-            'runOnInsecureOrigins': self.runOnInsecureOrigins,
+            'runOnInsecureOrigins': self.run_on_insecure_origins,
             'hardwareConcurrency': self.navigator_hardware_concurrency,
+            'userAgentData': self.user_agent_data,
         })
         # defined options constant
         yield f'const opts = {opts}'
@@ -106,10 +109,10 @@ class StealthConfig:
         yield SCRIPTS['utils']
         yield SCRIPTS['magic-arrays']
 
-        if self.webdrive:
-            yield SCRIPTS['webdrive']
-        if self.outerdimensions:
-            yield SCRIPTS['outerdimensions']
+        if self.webdriver:
+            yield SCRIPTS['webdriver']
+        if self.outer_dimensions:
+            yield SCRIPTS['outer_dimensions']
         if self.webgl_vendor:
             yield SCRIPTS['webgl_vendor']
         if self.navigator_vendor:
@@ -120,18 +123,18 @@ class StealthConfig:
             yield SCRIPTS['navigator_permissions']
         if self.navigator_languages:
             yield SCRIPTS['navigator_languages']
-        if self.navigator_platform:
-            yield SCRIPTS['navigator_platform']
-        if self.navigator_user_agent:
-            yield SCRIPTS['navigator_user_agent']
+        # if self.navigator_platform:
+        #     yield SCRIPTS['navigator_platform']
+        # if self.navigator_user_agent:
+        #     yield SCRIPTS['navigator_user_agent']
         if self.media_codecs:
             yield SCRIPTS['media_codecs']
         if self.iframe_content_window:
             yield SCRIPTS['iframe_content_window']
         if self.chrome_runtime:
             yield SCRIPTS['chrome_runtime']
-        if self.chrome_loadtimes:
-            yield SCRIPTS['chrome_loadtimes']
+        if self.chrome_load_times:
+            yield SCRIPTS['chrome_load_times']
         if self.chrome_csi:
             yield SCRIPTS['chrome_csi']
         if self.chrome_app:
@@ -140,8 +143,10 @@ class StealthConfig:
             yield SCRIPTS['hairline']
         if self.webrtc:
             yield SCRIPTS['webrtc']
-        if self.fingerprint:
-            yield SCRIPTS['fingerprint']
+        # if self.fingerprint:
+        #     yield SCRIPTS['fingerprint']
+        # if self.user_agent_data:
+        #     yield SCRIPTS['user_agent_data']
 
 
 def stealth_sync(page: SyncPage, config: StealthConfig = None):

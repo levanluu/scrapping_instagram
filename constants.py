@@ -2,6 +2,7 @@ from enum import Enum
 
 ARGS = [
     "--autoplay-policy=user-gesture-required",
+    "--disable-3d-apis",
     "--disable-background-networking",
     "--disable-background-timer-throttling",
     "--disable-backgrounding-occluded-windows",
@@ -13,6 +14,7 @@ ARGS = [
     "--disable-domain-reliability",
     "--disable-features=AudioServiceOutOfProcess",
     "--disable-gesture-requirement-for-media-playback",
+    "--disable-gpu",
     "--disable-hang-monitor",
     "--disable-ipc-flooding-protection",
     "--disable-notifications",
@@ -25,6 +27,7 @@ ARGS = [
     "--disable-speech-api",
     "--disable-sync",
     "--disable-web-security",
+    "--disable-webgl",
     "--disk-cache-size=33554432",
     "--hide-scrollbars",
     "--ignore-gpu-blocklist",

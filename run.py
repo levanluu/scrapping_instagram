@@ -6,6 +6,13 @@ from context import Context
 from playwright.async_api import async_playwright
 from fingerprint import stealth_async
 from constants import ARGS
+from random import randint, uniform
+
+
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) " \
+             "Chrome/109.0.0.0 Safari/537.36"
+USERNAME = "bisdev001"
+PASSWORD = "Abcd12345@"
 
 
 def get_timezone(
@@ -30,34 +37,37 @@ def get_timezone(
 
 async def navigator(page):
     await page.add_init_script(
-        'Object.defineProperty('
-        'Object.getPrototypeOf(navigator),'
-        '"deviceMemory",'
-        '{get() {return 16}})'
+        'Object.defineProperty(Object.getPrototypeOf(navigator),"deviceMemory", {get() {return 16}})'
     )
     await page.add_init_script(
-        'Object.defineProperty('
-        'Object.getPrototypeOf(navigator),'
-        '"hardwareConcurrency",'
-        '{get() {return 16}})'
+        'Object.defineProperty(Object.getPrototypeOf(navigator), "hardwareConcurrency", {get() {return 16}})'
     )
+    await page.add_init_script(
+        'Object.defineProperty(Object.getPrototypeOf(navigator), '
+        '"userAgentData", {get() {return '
+        '{ "brands": [ { "brand": "Not_A Brand", "version": "99" }, '
+        '{ "brand": "Google Chrome", "version": "109" }, '
+        '{ "brand": "Chromium", "version": "109" } ], "mobile": false, "platform": "macOS" }}})'
+    )
+
+
+async def login(page) -> None:
+    await page.get_by_text("Phone number, username, or email").fill(USERNAME)
+    await page.type('input[name="password"]', PASSWORD)
+    await page.locator('button[type="submit"]').click()
 
 
 async def fingerprint(
         playwright,
         proxy: str = None,
 ):
-    browser_type = playwright.webkit
+    browser_type = playwright.chromium
     browser_device = playwright.devices["Desktop Chrome"]
+    browser_device["user_agent"] = USER_AGENT
+
     browser = await browser_type.launch(
         headless=False,
         args=ARGS,
-        proxy={
-            "server": "176.53.167.193:30011",
-            "username": "quynh_nguyen+3_digitalf",
-            "password": "ce0dd13d43"
-
-        },
         devtools=False
     )
 
@@ -72,15 +82,30 @@ async def fingerprint(
     page = await browser_context.new_page()
     await stealth_async(page)
     await navigator(page)
-    return page
+    return page, browser_context
 
 
 async def main():
     async with async_playwright() as pw:
-        page = await fingerprint(pw)
-        await page.goto(
-            url="https://browserleaks.com/canvas"
-        )
+        page, browser_context = await fingerprint(pw)
+
+        await page.goto(url="https://twitter.com/?lang=en")
+
+        cookies = json.load(open('cookies/bisdev001_instagram_11-02-2023.json'))
+        await page.context.add_cookies(cookies=cookies)
+        await asyncio.sleep(3)
+        await page.goto('https://www.instagram.com/')
+        await page.wait_for_load_state()
+        with open('cookies/bisdev001_instagram_11-02-2023.json', 'w') as f:
+            cookies = await page.context.cookies()
+            json.dump(cookies, f, indent=4)
+            print("Save cookies is ok!")
+
+        for i in range(3):
+            print(f"Auto-scroll => {i+1}")
+            await page.mouse.wheel(0, randint(300, 900))
+            await asyncio.sleep(uniform(1, 5))
+
         await asyncio.sleep(100000)
 
 if __name__ == '__main__':
