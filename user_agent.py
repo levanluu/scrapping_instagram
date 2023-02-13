@@ -8,21 +8,21 @@ class UserAgent:
 
     @property
     def platform(self):
-        if 'mac' == self.ua.device.family.lower() and 'intel' in self.user_agent.lower():
+        if "mac" == self.ua.device.family.lower() and "intel" in self.user_agent.lower():
             return "MacIntel"
         return self.ua.os.family
 
     @property
     def app_version(self):
-        if 'firefox' in self.ua.ua_string.lower():
-            app_version = self.ua.ua_string.split(";")[0]
+        if 'firefox' in self.user_agent.lower():
+            app_version = self.user_agent.split(";")[0]
             app_version = app_version.split("/")
             return f"{app_version})"
-        return self.ua.ua_string.split("/")[1]
+        return self.user_agent.split("/")[1]
 
     @property
     def app_code_name(self):
-        return self.ua.ua_string.split("/")[0]
+        return self.user_agent.split("/")[0]
 
     @property
     def user_agent_data(self):
@@ -40,7 +40,7 @@ class UserAgent:
 
     @property
     def cpu(self):
-        cpu = self.ua.ua_string.split(';')[1].strip().split()
+        cpu = self.user_agent.split(";")[1].strip().split()
         return cpu[0].strip()
 
     @property
