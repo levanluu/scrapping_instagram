@@ -72,7 +72,7 @@ async def fingerprint(
     )
     page = await browser_context.new_page()
     await stealth_async(page)
-    await Navigator(context=page, user_agent=USER_AGENT).loads()
+    await Navigator(page=page, user_agent=USER_AGENT).loads()
     return page, browser_context
 
 
@@ -92,22 +92,37 @@ async def main():
             cookies = await page.context.cookies()
             json.dump(cookies, f, indent=4)
             print("Save cookies is ok!")
-
-        for i in range(5):
-            print(f"Auto-scroll => {i+1}")
-            await page.mouse.wheel(0, randint(300, 900))
-            await asyncio.sleep(uniform(1, 3))
-
-        articles = await page.query_selector_all('article')
-        contents = []
-        for article in articles:
-            _ = await article.inner_html()
-            contents.append(_)
-        for content in contents:
-            soup = BeautifulSoup(content, "html.parser")
-            spans = soup.findAll('span')
-            for span in spans:
-                print(span.text)
+        friend_feed = []
+        while len(friend_feed) < 50:
+            if len(friend_feed) == 0:
+                for i in range(5):
+                    print(f"Auto-scroll => {i+1}")
+                    await page.mouse.wheel(0, 900)
+                    await asyncio.sleep(uniform(1, 3))
+            else:
+                for i in range(7):
+                    print(f"Auto-scroll-second => {i+1}")
+                    await page.mouse.wheel(0, 900)
+                    await asyncio.sleep(uniform(1, 3))
+            await asyncio.sleep(10)
+            articles = await page.query_selector_all('article')
+            for article in articles:
+                try:
+                    _ = await article.inner_html()
+                    soup = BeautifulSoup(_, "html.parser")
+                    tag_img = soup.find_all('img', {'class': 'x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3'})
+                    author = soup.select_one('div._aacl._aaco._aacw._aacx._aad6._aade')
+                    content = soup.select_one(' h1._aacl._aaco._aacu._aacx._aad7._aade')
+                    _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
+                    image_url = []
+                    for image in tag_img:
+                        image_url.append(image['src'])
+                    friend_feed_object = {'author': author.text, 'content': content.text, 'image_url': image_url, 'like': _aacl_aaco.text}
+                    friend_feed.append(friend_feed_object)
+                except:
+                    continue
+            print(len(friend_feed))
+            print(friend_feed, '/////')
         await asyncio.sleep(100000)
 
 if __name__ == '__main__':
