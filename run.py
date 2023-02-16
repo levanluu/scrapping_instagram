@@ -8,9 +8,11 @@ from fingerprint import stealth_async
 from constants import ARGS
 from random import randint, uniform
 from navigator import Navigator
+from bs4 import BeautifulSoup
 
 
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) " \
+             "Chrome/110.0.0.0 Safari/537.36"
 USERNAME = "bisdev001"
 PASSWORD = "Abcd12345@"
 
@@ -53,6 +55,11 @@ async def fingerprint(
         headless=False,
         args=ARGS,
         devtools=False
+        # proxy={
+        #     "server": "http://176.53.167.193:30011",
+        #     "username": "quynh_nguyen+3_digitalf",
+        #     "password": "ce0dd13d43"
+        # }
     )
 
     timezone, lat, lon = get_timezone(proxy)
@@ -64,8 +71,8 @@ async def fingerprint(
         **browser_device
     )
     page = await browser_context.new_page()
-    # await stealth_async(page)
-    await Navigator(page=page, user_agent=USER_AGENT).loads()
+    await stealth_async(page)
+    await Navigator(context=page, user_agent=USER_AGENT).loads()
     return page, browser_context
 
 
@@ -73,23 +80,34 @@ async def main():
     async with async_playwright() as pw:
         page, browser_context = await fingerprint(pw)
 
-        await page.goto(url="https://bot.sannysoft.com/")
+        # await page.goto(url="https://browserleaks.com/webrtc")
+        # await asyncio.sleep(100)
 
-        # cookies = json.load(open('cookies/bisdev001_instagram_11-02-2023.json'))
-        # await page.context.add_cookies(cookies=cookies)
-        # await asyncio.sleep(3)
-        # await page.goto('https://www.instagram.com/')
-        # await page.wait_for_load_state()
-        # with open('cookies/bisdev001_instagram_11-02-2023.json', 'w') as f:
-        #     cookies = await page.context.cookies()
-        #     json.dump(cookies, f, indent=4)
-        #     print("Save cookies is ok!")
-        #
-        # for i in range(3):
-        #     print(f"Auto-scroll => {i+1}")
-        #     await page.mouse.wheel(0, randint(300, 900))
-        #     await asyncio.sleep(uniform(1, 5))
+        cookies = json.load(open('cookies/bisdev001_instagram_11-02-2023.json'))
+        await page.context.add_cookies(cookies=cookies)
+        await asyncio.sleep(3)
+        await page.goto('https://www.instagram.com/')
+        await page.wait_for_url('https://www.instagram.com/')
+        with open('cookies/bisdev001_instagram_11-02-2023.json', 'w') as f:
+            cookies = await page.context.cookies()
+            json.dump(cookies, f, indent=4)
+            print("Save cookies is ok!")
 
+        for i in range(5):
+            print(f"Auto-scroll => {i+1}")
+            await page.mouse.wheel(0, randint(300, 900))
+            await asyncio.sleep(uniform(1, 3))
+
+        articles = await page.query_selector_all('article')
+        contents = []
+        for article in articles:
+            _ = await article.inner_html()
+            contents.append(_)
+        for content in contents:
+            soup = BeautifulSoup(content, "html.parser")
+            spans = soup.findAll('span')
+            for span in spans:
+                print(span.text)
         await asyncio.sleep(100000)
 
 if __name__ == '__main__':
