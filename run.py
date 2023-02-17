@@ -12,7 +12,6 @@ import requests
 from datetime import datetime
 from ast import literal_eval
 
-
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) " \
              "Chrome/110.0.0.0 Safari/537.36"
 USERNAME = "bisdev001"
@@ -59,7 +58,7 @@ async def fingerprint(
     username = getProxies['username']
     password = getProxies['password']
     browser = await browser_type.launch(
-        headless=False,
+        headless=True,
         args=ARGS,
         devtools=False,
         proxy={
@@ -113,8 +112,7 @@ async def update_cookies_auth_social_network(auth_id, cookies):
     response = requests.request("PUT", url_update, headers=headers, data=payload)
     return response.text
 
-
-async def main():
+async def run():
     async with async_playwright() as pw:
         authSocialNetwork = await get_auth_social_networkByDate()
         if authSocialNetwork:
@@ -189,11 +187,18 @@ async def main():
                          except Exception as e:
                              print('not found', e)
 
+
+
+async def main():
+    while True:
+        authSocialNetwork = await get_auth_social_networkByDate()
+        if authSocialNetwork:
+            await run()
+
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
     try:
+        loop = asyncio.get_event_loop()
         loop.run_until_complete(main())
-        loop.close()
     except Exception as e:
         logging.exception(e)
         loop.close()
