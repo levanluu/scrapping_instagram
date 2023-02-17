@@ -2,20 +2,22 @@ import asyncio
 import logging
 import json
 from urllib.request import urlopen
-from context import Context
 from playwright.async_api import async_playwright
 from fingerprint import stealth_async
 from constants import ARGS
 from random import randint, uniform
 from navigator import Navigator
 from bs4 import BeautifulSoup
+import requests
+from datetime import datetime
+from ast import literal_eval
 
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) " \
              "Chrome/110.0.0.0 Safari/537.36"
 USERNAME = "bisdev001"
 PASSWORD = "Abcd12345@"
-
+url = 'https://api.dev.socialeyez.io'
 
 def get_timezone(
         proxy: str = None
@@ -46,23 +48,28 @@ async def login(page) -> None:
 async def fingerprint(
         playwright,
         proxy: str = None,
+        getAuthProxies = None,
+        getProxies = None
 ):
+    print(getAuthProxies, '/////')
     browser_type = playwright.chromium
     browser_device = playwright.devices["Desktop Chrome"]
-    browser_device["user_agent"] = USER_AGENT
-
+    browser_device["user_agent"] = getAuthProxies['userAgent']
+    server = f"http://{getProxies['host']}:{getProxies['port']}"
+    username = getProxies['username']
+    password = getProxies['password']
     browser = await browser_type.launch(
         headless=False,
         args=ARGS,
-        devtools=False
-        # proxy={
-        #     "server": "http://176.53.167.193:30011",
-        #     "username": "quynh_nguyen+3_digitalf",
-        #     "password": "ce0dd13d43"
-        # }
+        devtools=False,
+        proxy={
+            "server": server,
+            "username": username,
+            "password": password
+        }
     )
 
-    timezone, lat, lon = get_timezone(proxy)
+    timezone, lat, lon = get_timezone(server)
     geolocation = {'longitude': lon, 'latitude': lat} if lat and lon else None
     browser_context = await browser.new_context(
         locale='en-US, en',
@@ -72,58 +79,115 @@ async def fingerprint(
     )
     page = await browser_context.new_page()
     await stealth_async(page)
-    await Navigator(page=page, user_agent=USER_AGENT).loads()
+    await Navigator(page=page, user_agent=getAuthProxies['userAgent']).loads()
     return page, browser_context
+
+
+async def get_auth_social_networkByDate():
+    today = datetime.now()
+    print("Today's date:", today)
+    authSocialNetwork = requests.get(url + f'/auth-social-network/auth_date?date=\"{today}\"&type=instagram')
+    return authSocialNetwork.json()
+
+async def update_auth_social_network(id_auth):
+    headers = {"content-type": "application/json"}
+    requests.put(url + f'/auth-social-network/{id_auth}/update', headers=headers)
+    return
+
+async def get_auth_proxies(id_auth):
+    get_auth_proxies = requests.get(url + f'/auth-social-network/{id_auth}/get_auth_proxies').json()
+    return get_auth_proxies
+
+async def get_proxies(id_proxies):
+    return requests.get(url + f'/proxies/{id_proxies}/findOne').json()
+
+async def update_cookies_auth_social_network(auth_id, cookies):
+    payload = json.dumps({
+        "cookies": f'{cookies}'
+    })
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    url_update = f"{url}/auth-social-network/{auth_id}/update"
+
+    response = requests.request("PUT", url_update, headers=headers, data=payload)
+    return response.text
 
 
 async def main():
     async with async_playwright() as pw:
-        page, browser_context = await fingerprint(pw)
+        authSocialNetwork = await get_auth_social_networkByDate()
+        if authSocialNetwork:
+            await update_auth_social_network(authSocialNetwork['id'])
+            getAuthProxies = await get_auth_proxies(authSocialNetwork['id'])
+            if getAuthProxies:
+                getProxies = await get_proxies(getAuthProxies['proxiesId'])
+                print(getProxies)
+                if getProxies:
+                    page, browser_context = await fingerprint(pw, authSocialNetwork, getAuthProxies, getProxies)
 
-        # await page.goto(url="https://browserleaks.com/webrtc")
-        # await asyncio.sleep(100)
+                    # await page.goto(url="https://browserleaks.com/webrtc")
+                    # await asyncio.sleep(100000)
+                    cookies = literal_eval(authSocialNetwork['cookies'])
+                    print(cookies)
+                    await page.context.add_cookies(cookies=cookies)
+                    await asyncio.sleep(3)
+                    await page.goto('https://www.instagram.com/')
+                    await page.wait_for_url('https://www.instagram.com/')
+                    Arraycookies = await page.context.cookies()
+                    await update_cookies_auth_social_network(authSocialNetwork['id'], Arraycookies)
+                    print("Save cookies is ok!")
+                    await asyncio.sleep(3)
+                    friend_feed = []
+                    count_error = 0
+                    try:
+                        while len(friend_feed) < 50:
+                            if len(friend_feed) == 0:
+                                for i in range(5):
+                                    print(f"Auto-scroll => {i + 1}")
+                                    await page.mouse.wheel(0, 900)
+                                    await asyncio.sleep(uniform(1, 3))
+                            else:
+                                for i in range(7):
+                                    print(f"Auto-scroll-second => {i + 1}")
+                                    await page.mouse.wheel(0, 900)
+                                    await asyncio.sleep(uniform(1, 3))
+                            await asyncio.sleep(10)
+                            articles = await page.query_selector_all('article')
+                            for article in articles:
+                                try:
+                                    _ = await article.inner_html()
+                                    soup = BeautifulSoup(_, "html.parser")
+                                    tag_img = soup.find_all('img', {'class': 'x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3'})
+                                    author = soup.select_one('div._aacl._aaco._aacw._aacx._aad6._aade')
+                                    content = soup.select_one(' h1._aacl._aaco._aacu._aacx._aad7._aade')
+                                    _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
+                                    image_url = []
+                                    for image in tag_img:
+                                        image_url.append(image['src'])
+                                    friend_feed_object = {'author': author.text, 'content': content.text, 'urls_images': image_url,
+                                                          'like': _aacl_aaco.text}
+                                    friend_feed.append(friend_feed_object)
+                                except:
+                                    continue
+                            print(len(friend_feed))
+                    except:
+                        print('error scraping data')
 
-        cookies = json.load(open('cookies/bisdev001_instagram_11-02-2023.json'))
-        await page.context.add_cookies(cookies=cookies)
-        await asyncio.sleep(3)
-        await page.goto('https://www.instagram.com/')
-        await page.wait_for_url('https://www.instagram.com/')
-        with open('cookies/bisdev001_instagram_11-02-2023.json', 'w') as f:
-            cookies = await page.context.cookies()
-            json.dump(cookies, f, indent=4)
-            print("Save cookies is ok!")
-        friend_feed = []
-        while len(friend_feed) < 50:
-            if len(friend_feed) == 0:
-                for i in range(5):
-                    print(f"Auto-scroll => {i+1}")
-                    await page.mouse.wheel(0, 900)
-                    await asyncio.sleep(uniform(1, 3))
-            else:
-                for i in range(7):
-                    print(f"Auto-scroll-second => {i+1}")
-                    await page.mouse.wheel(0, 900)
-                    await asyncio.sleep(uniform(1, 3))
-            await asyncio.sleep(10)
-            articles = await page.query_selector_all('article')
-            for article in articles:
-                try:
-                    _ = await article.inner_html()
-                    soup = BeautifulSoup(_, "html.parser")
-                    tag_img = soup.find_all('img', {'class': 'x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3'})
-                    author = soup.select_one('div._aacl._aaco._aacw._aacx._aad6._aade')
-                    content = soup.select_one(' h1._aacl._aaco._aacu._aacx._aad7._aade')
-                    _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
-                    image_url = []
-                    for image in tag_img:
-                        image_url.append(image['src'])
-                    friend_feed_object = {'author': author.text, 'content': content.text, 'image_url': image_url, 'like': _aacl_aaco.text}
-                    friend_feed.append(friend_feed_object)
-                except:
-                    continue
-            print(len(friend_feed))
-            print(friend_feed, '/////')
-        await asyncio.sleep(100000)
+                    await page.close()
+
+                    if len(friend_feed) > 0:
+                         try:
+                             payloadFriendFeed = json.dumps({
+                                 "authSocialNetworkId": authSocialNetwork['id'],
+                                 "payload": friend_feed,
+                             })
+                             headers = {"content-type": "application/json"}
+                             response = requests.request("POST", url + "/scraping-friend-feed/store/instagram", headers=headers, data=payloadFriendFeed)
+                             print(response)
+                             return response
+                         except Exception as e:
+                             print('not found', e)
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
