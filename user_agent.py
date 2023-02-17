@@ -51,7 +51,7 @@ class UserAgent:
 
     @property
     def os_version(self):
-        return f"{self.ua.os.version[0]}.{self.ua.os.version[1]}"
+        return None
 
     @property
     def version(self):
@@ -59,7 +59,7 @@ class UserAgent:
 
     @property
     def oscpu(self):
-        return f"{self.cpu} {self.os} {self.os_version}"
+        return None
 
     @property
     def is_mobile(self):
@@ -74,7 +74,7 @@ class UserAgent:
         await self.load_platform(page=page)
         await self.load_app_code_name(page=page)
         await self.load_app_version(page=page)
-        await self.load_oscpu(page=page)
+        # await self.load_oscpu(page=page)
 
     async def load_user_agent_data(self, page) -> None:
         await page.add_init_script(
@@ -95,10 +95,11 @@ class UserAgent:
         )
 
     async def load_app_version(self, page) -> None:
-        await page.add_init_script(
-            'Object.defineProperty(Object.getPrototypeOf(navigator), '
-            '"appVersion", {get() {return %s}})' % self.to_json(self.app_version)
-        )
+        if self.ua.os.version:
+            await page.add_init_script(
+                'Object.defineProperty(Object.getPrototypeOf(navigator), '
+                '"appVersion", {get() {return %s}})' % self.to_json(self.app_version)
+            )
 
     async def load_oscpu(self, page) -> None:
         await page.add_init_script(
