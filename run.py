@@ -250,7 +250,7 @@ async def getFriendFeed(page, auth_id):
          except Exception as e:
              print('not found', e)
 async def main():
-    # while True:
+    while True:
         authSocialNetwork = await get_auth_social_networkByDate()
         if authSocialNetwork:
             await run()
