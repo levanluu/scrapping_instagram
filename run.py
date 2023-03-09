@@ -58,7 +58,7 @@ async def fingerprint(
     username = getProxies['username']
     password = getProxies['password']
     browser = await browser_type.launch(
-        headless=False,
+        headless=True,
         args=ARGS,
         devtools=False,
         proxy={
