@@ -151,7 +151,7 @@ async def getFriendList(page, auth_id):
         count_follower = 0
         friend_list = []
         await page.click('div.xh8yej3.x1iyjqo2 > div:nth-child(8)')
-        await asyncio.sleep(3)
+        await asyncio.sleep(5)
         tag_follower = await (await page.query_selector(
             'div.xh8yej3.x1gryazu.x10o80wk.x14k21rp.x1porb0y.x17snn68.x6osk4m > section > main > div > header > section > ul > li:nth-child(2)')).inner_text()
         if tag_follower:
@@ -166,19 +166,20 @@ async def getFriendList(page, auth_id):
         await page.click('div.xh8yej3.x1gryazu.x10o80wk.x14k21rp.x1porb0y.x17snn68.x6osk4m > section > main > div > header > section > ul > li:nth-child(2)')
         await asyncio.sleep(3)
         await page.hover('div.x7r02ix.xf1ldfh.x131esax.xdajt7p.xxfnqb6.xb88tzc.xw2csxc.x1odjw0f.x5fp0pe > div > div > div._aano > div:nth-child(1) > div')
-        for i in range(30):
+        for i in range(5):
             print(f"Auto-scroll => {i + 1}")
             await page.mouse.wheel(0, 900)
             await asyncio.sleep(uniform(3, 6))
         _aano = await page.query_selector('div.x7r02ix.xf1ldfh.x131esax.xdajt7p.xxfnqb6.xb88tzc.xw2csxc.x1odjw0f.x5fp0pe > div > div > div._aano > div:nth-child(1) > div')
-        _ab8w = await _aano.query_selector_all('div._ab8w._ab94._ab97._ab9f._ab9k._ab9p._ab9-._aba8._abcm')
+        _ab8w = await _aano.query_selector_all('div.x9f619.x1n2onr6.x1ja2u2z.x1qjc9v5.x78zum5.xdt5ytf.x1iyjqo2.xl56j7k.xeuugli')
+
         for tag_friend in _ab8w:
             try:
                 _html = await tag_friend.inner_html()
                 soup = BeautifulSoup(_html, "html.parser")
                 avatar = soup.select_one('img', {'class': 'x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3'})['src']
-                username = soup.select_one('div._ab8y._ab94._ab97._ab9f._ab9k._ab9p._abcm').text
-                name = soup.select_one('div._aacl._aaco._aacu._aacy._aada').text
+                username = soup.select_one('span', { 'class': '_aacl _aaco _aacw _aacx _aad7 _aade' }).text
+                name = soup.select_one('div', { 'class': 'x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp xo1l8bm x1roi4f4 x10wh9bi x1wdrske x8viiok x18hxmgj' }).text
                 link = f'https://www.instagram.com/{username}/'
 
                 friend_list.append({ 'name': name, 'avatar': avatar, 'link': link, 'authSocialNetworkId': auth_id })
