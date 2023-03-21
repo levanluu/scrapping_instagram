@@ -58,7 +58,7 @@ async def fingerprint(
     username = getProxies['username']
     password = getProxies['password']
     browser = await browser_type.launch(
-        headless=False,
+        headless=True,
         args=ARGS,
         devtools=False,
         proxy={
@@ -140,8 +140,8 @@ async def run():
                     print("Save cookies is ok!")
                     await asyncio.sleep(3)
                     await getFriendList(page, authSocialNetwork['id'])
-                    # await page.goto('https://www.instagram.com/')
-                    # await getFriendFeed(page, authSocialNetwork['id'])
+                    await page.goto('https://www.instagram.com/')
+                    await getFriendFeed(page, authSocialNetwork['id'])
 
 
 async def getFriendList(page, auth_id):
