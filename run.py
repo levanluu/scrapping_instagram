@@ -166,7 +166,7 @@ async def getFriendList(page, auth_id):
         await page.click('div.xh8yej3.x1gryazu.x10o80wk.x14k21rp.x1porb0y.x17snn68.x6osk4m > section > main > div > header > section > ul > li:nth-child(2)')
         await asyncio.sleep(3)
         await page.hover('div.x7r02ix.xf1ldfh.x131esax.xdajt7p.xxfnqb6.xb88tzc.xw2csxc.x1odjw0f.x5fp0pe > div > div > div._aano > div:nth-child(1) > div')
-        for i in range(5):
+        for i in range(15):
             print(f"Auto-scroll => {i + 1}")
             await page.mouse.wheel(0, 900)
             await asyncio.sleep(uniform(3, 6))
