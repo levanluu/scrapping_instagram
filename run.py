@@ -202,11 +202,13 @@ async def getFriendList(page, auth_id):
 async def getFriendFeed(page, auth_id):
     friend_feed = []
     count_error = 0
+    scroll_count = 0;
     try:
-        while len(friend_feed) < 50:
+        while len(friend_feed) < 50 or scroll_count < 50:
             if len(friend_feed) == 0:
                 for i in range(5):
                     print(f"Auto-scroll => {i + 1}")
+                    scroll_count +=1
                     await page.mouse.wheel(0, 900)
                     await asyncio.sleep(uniform(1, 3))
             else:
@@ -221,14 +223,17 @@ async def getFriendFeed(page, auth_id):
                     _ = await article.inner_html()
                     soup = BeautifulSoup(_, "html.parser")
                     tag_img = soup.find_all('img', {'class': 'x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3'})
-                    author = soup.select_one('div._aacl._aaco._aacw._aacx._aad6._aade')
-                    content = soup.select_one(' h1._aacl._aaco._aacu._aacx._aad7._aade')
-                    _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
+                    _aaqt = soup.select_one('div', { 'class': '_aaqt' })
+                    author = _aaqt.select_one('div.xt0psk2')
+                    content = soup.select_one('h1', { 'class': '_aacl _aaco _aacu _aacx _aad7 _aade' })
+                    print(content.text, '///////')
+                    # _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
                     image_url = []
                     for image in tag_img:
                         image_url.append(image['src'])
-                    friend_feed_object = {'author': author.text, 'content': content.text, 'urls_images': image_url,
-                                          'like': _aacl_aaco.text}
+                    friend_feed_object = {'author': author.text, 'content': content.text, 'urls_images': image_url}
+
+                    print(friend_feed_object, '///////')
                     friend_feed.append(friend_feed_object)
                 except:
                     continue
