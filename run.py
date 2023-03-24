@@ -204,7 +204,7 @@ async def getFriendFeed(page, auth_id):
     count_error = 0
     scroll_count = 0;
     try:
-        while len(friend_feed) < 50 or scroll_count < 50:
+        while len(friend_feed) < 50 and scroll_count < 100:
             if len(friend_feed) == 0:
                 for i in range(5):
                     print(f"Auto-scroll => {i + 1}")
@@ -218,6 +218,7 @@ async def getFriendFeed(page, auth_id):
                     await asyncio.sleep(uniform(1, 3))
             await asyncio.sleep(10)
             articles = await page.query_selector_all('article')
+            print(scroll_count, '/////')
             for article in articles:
                 try:
                     _ = await article.inner_html()
@@ -226,14 +227,11 @@ async def getFriendFeed(page, auth_id):
                     _aaqt = soup.select_one('div', { 'class': '_aaqt' })
                     author = _aaqt.select_one('div.xt0psk2')
                     content = soup.select_one('h1', { 'class': '_aacl _aaco _aacu _aacx _aad7 _aade' })
-                    print(content.text, '///////')
                     # _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
                     image_url = []
                     for image in tag_img:
                         image_url.append(image['src'])
                     friend_feed_object = {'author': author.text, 'content': content.text, 'urls_images': image_url}
-
-                    print(friend_feed_object, '///////')
                     friend_feed.append(friend_feed_object)
                 except:
                     continue
