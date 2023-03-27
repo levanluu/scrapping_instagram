@@ -226,7 +226,7 @@ async def getFriendFeed(page, auth_id):
                     soup = BeautifulSoup(_, "html.parser")
                     tag_img = soup.find_all('img', {'class': 'x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3'})
                     _aaqt = soup.select_one('div', { 'class': '_aaqt' })
-                    author = _aaqt.select_one('div > div._aasi._aasj._ai9a > div > header > div._aaqy._aaq- > div._aar0._aar1 > div:nth-child(1) > div > div > span > div > div > a')
+                    author = _aaqt.select_one('div > div._aasi._aasj._ai9a > div > header > div._aaqy._aaq- > div._aar0._aar1 > div:nth-child(1) > div > div > span > div')
                     content = soup.select_one('h1', { 'class': '_aacl _aaco _aacu _aacx _aad7 _aade' })
                     # _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
                     image_url = []
@@ -235,6 +235,7 @@ async def getFriendFeed(page, auth_id):
                     friend_feed_object = {'author': author.text, 'content': content.text, 'urls_images': image_url}
                     friend_feed.append(friend_feed_object)
                 except:
+                    print('error ')
                     continue
             print(len(friend_feed))
     except:
