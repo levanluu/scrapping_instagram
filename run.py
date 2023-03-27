@@ -167,7 +167,7 @@ async def getFriendList(page, auth_id):
         await page.click('div.xh8yej3.x1gryazu.x10o80wk.x14k21rp.x1porb0y.x17snn68.x6osk4m > section > main > div > header > section > ul > li:nth-child(2)')
         await asyncio.sleep(3)
         await page.hover('div.x7r02ix.xf1ldfh.x131esax.xdajt7p.xxfnqb6.xb88tzc.xw2csxc.x1odjw0f.x5fp0pe > div > div > div._aano > div:nth-child(1) > div')
-        for i in range(15):
+        for i in range(1):
             print(f"Auto-scroll => {i + 1}")
             await page.mouse.wheel(0, 900)
             await asyncio.sleep(uniform(3, 6))
@@ -179,8 +179,8 @@ async def getFriendList(page, auth_id):
                 _html = await tag_friend.inner_html()
                 soup = BeautifulSoup(_html, "html.parser")
                 avatar = soup.select_one('img', {'class': 'x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3'})['src']
-                div_name = soup.select_one('div', { 'class': 'x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp xo1l8bm x1roi4f4 x10wh9bi x1wdrske x8viiok x18hxmgj' })
-                name = div_name.select_one('div > div > div.x1lliihq.x1plvlek.xryxfnj.x1n2onr6.x193iq5w.xeuugli.x1fj9vlw.x13faqbe.x1vvkbs.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.x1i0vuye.xvs91rp.x1s688f.x5n08af.x10wh9bi.x1wdrske.x8viiok.x18hxmgj > span > div > div.xt0psk2 > div > a > span > div').text
+                _aano = soup.select_one('div', {'class': '_aano'})
+                name = _aano.select_one('span', { 'class': '_aacl _aaco _aacw _aacx _aad7 _aade' }).text
                 link = f'https://www.instagram.com/{name}/'
 
                 friend_list.append({ 'name': name, 'avatar': avatar, 'link': link, 'authSocialNetworkId': auth_id })
