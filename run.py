@@ -58,7 +58,7 @@ async def fingerprint(
     username = getProxies['username']
     password = getProxies['password']
     browser = await browser_type.launch(
-        headless=True,
+        headless=False,
         args=ARGS,
         devtools=False,
 
@@ -226,7 +226,7 @@ async def getFriendFeed(page, auth_id):
                     soup = BeautifulSoup(_, "html.parser")
                     tag_img = soup.find_all('img', {'class': 'x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3'})
                     _aaqt = soup.select_one('div', { 'class': '_aaqt' })
-                    author = _aaqt.select_one('span', { 'class': 'x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp x1s688f x5n08af x10wh9bi x1wdrske x8viiok x18hxmgj' })
+                    author = _aaqt.select_one('div > div._aasi._aasj._ai9a > div > header > div._aaqy._aaq- > div._aar0._aar1 > div:nth-child(1) > div > div > span > div > div > a')
                     content = soup.select_one('h1', { 'class': '_aacl _aaco _aacu _aacx _aad7 _aade' })
                     # _aacl_aaco = soup.select_one(('div._aacl._aaco._aacw._aacx._aada._aade'))
                     image_url = []
