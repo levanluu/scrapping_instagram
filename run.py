@@ -61,6 +61,7 @@ async def fingerprint(
         headless=True,
         args=ARGS,
         devtools=False,
+
         proxy={
             "server": server,
             "username": username,
@@ -202,7 +203,7 @@ async def getFriendList(page, auth_id):
 async def getFriendFeed(page, auth_id):
     friend_feed = []
     count_error = 0
-    scroll_count = 0;
+    scroll_count = 0
     try:
         while len(friend_feed) < 50 and scroll_count < 100:
             if len(friend_feed) == 0:
